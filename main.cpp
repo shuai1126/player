@@ -59,7 +59,7 @@ namespace {
         int winWidth = w / 2;
         int winHeight = h / 2;
 
-        if (SDL_Init(SDL_INIT_VIDEO)) { //初始化
+        if (SDL_Init(SDL_INIT_VIDEO)) {
             string errMsg = "Could not initialize SDL -";
             errMsg += SDL_GetError();
             cout << errMsg << endl;
@@ -70,7 +70,7 @@ namespace {
 
         SDL_Window* screen;
         // SDL 2.0 Support for multiple windows
-        screen = SDL_CreateWindow("player", SDL_WINDOWPOS_UNDEFINED, //创建窗口
+        screen = SDL_CreateWindow("player", SDL_WINDOWPOS_UNDEFINED,
                                   SDL_WINDOWPOS_UNDEFINED, winWidth, winHeight,
                                   SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
         if (!screen) {
@@ -80,11 +80,11 @@ namespace {
             throw std::runtime_error(errMsg);
         }
 
-        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(screen, -1, 0); //基于窗口创建渲染器
+        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(screen, -1, 0);
 
         // IYUV: Y + U + V  (3 planes)
         // YV12: Y + V + U  (3 planes)
-        Uint32 pixformat = SDL_PIXELFORMAT_IYUV; //纹理的格式
+        Uint32 pixformat = SDL_PIXELFORMAT_IYUV;
 
         SDL_Texture* sdlTexture =
                 SDL_CreateTexture(sdlRenderer, pixformat, SDL_TEXTUREACCESS_STREAMING, w, h);
