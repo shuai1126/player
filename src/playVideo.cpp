@@ -1,6 +1,11 @@
+//
+// Created by 陈志帅 on 2020/4/15.
+//
+
 #include <iostream>
 #include <fstream>
 #include "ffmpegUtil.h"
+#include "FrameGrabber.h"
 
 extern "C" {
 #include "SDL2/SDL.h"
@@ -18,16 +23,6 @@ namespace {
 
     using namespace ffmpegUtil;
 
-    const int bpp = 12;
-
-    int screen_w = 640;
-    int screen_h = 360;
-    const int pixel_w = 1920;
-    const int pixel_h = 1080;
-
-    const int bufferSize = pixel_w * pixel_h * bpp / 8;
-    unsigned char buffer[bufferSize];
-
     int thread_exit = 0;
 
     int refreshPicture(void* opaque) {
@@ -37,7 +32,7 @@ namespace {
             SDL_Event event;
             event.type = REFRESH_EVENT;
             SDL_PushEvent(&event);
-            SDL_Delay(timeInterval);
+            SDL_Delay(timeInterval); //延时
         }
         thread_exit = 0;
         // Break
@@ -54,12 +49,12 @@ namespace {
 
         const int w = grabber.getWidth();
         const int h = grabber.getHeight();
-        const auto fmt = AVPixelFormat(grabber.getPixelFormat());
+        const auto fmt = AVPixelFormat(grabber.getPixelFormat()); //拿到像素格式
 
         int winWidth = w / 2;
         int winHeight = h / 2;
 
-        if (SDL_Init(SDL_INIT_VIDEO)) {
+        if (SDL_Init(SDL_INIT_VIDEO)) { //初始化
             string errMsg = "Could not initialize SDL -";
             errMsg += SDL_GetError();
             cout << errMsg << endl;
@@ -68,7 +63,7 @@ namespace {
 
         //--------------------- GET SDL window READY -------------------
 
-        SDL_Window* screen;
+        SDL_Window* screen; //创建窗口
         // SDL 2.0 Support for multiple windows
         screen = SDL_CreateWindow("player", SDL_WINDOWPOS_UNDEFINED,
                                   SDL_WINDOWPOS_UNDEFINED, winWidth, winHeight,
@@ -80,13 +75,13 @@ namespace {
             throw std::runtime_error(errMsg);
         }
 
-        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(screen, -1, 0);
+        SDL_Renderer* sdlRenderer = SDL_CreateRenderer(screen, -1, 0); //创建渲染器
 
         // IYUV: Y + U + V  (3 planes)
         // YV12: Y + V + U  (3 planes)
         Uint32 pixformat = SDL_PIXELFORMAT_IYUV;
 
-        SDL_Texture* sdlTexture =
+        SDL_Texture* sdlTexture = //创建纹理
                 SDL_CreateTexture(sdlRenderer, pixformat, SDL_TEXTUREACCESS_STREAMING, w, h);
 
         //---------------------------------------------
@@ -116,7 +111,7 @@ namespace {
             struct SwsContext* sws_ctx =
                     sws_getContext(w, h, fmt, w, h, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
 
-            int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, w, h, 32);
+            int numBytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, w, h, 32);//返回存储字节所需的数据量的大小
             uint8_t* buffer = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
             AVFrame* pict = av_frame_alloc();
             av_image_fill_arrays(pict->data, pict->linesize, buffer, AV_PIX_FMT_YUV420P, w, h, 32);
@@ -125,8 +120,6 @@ namespace {
                 if (!videoFinish) {
                     ret = grabber.grabImageFrame(frame);
                     if (ret == 1) {  // success.
-                        // ffmpegUtil::writeY420pFrame2Buffer(reinterpret_cast<char*>(buffer), frame);
-
                         sws_scale(sws_ctx, (uint8_t const* const*)frame->data, frame->linesize, 0, h,
                                   pict->data, pict->linesize);
 
@@ -151,7 +144,7 @@ namespace {
                 if (event.type == REFRESH_EVENT) {
                     // Use this function to update a rectangle within a planar
                     // YV12 or IYUV texture with new pixel data.
-                    SDL_UpdateYUVTexture(sdlTexture,  // the texture to update
+                    SDL_UpdateYUVTexture(sdlTexture,  // the texture to update 设置纹理YUV数据
                                          NULL,        // a pointer to the rectangle of pixels to update, or
                             // NULL to update the entire texture
                                          pict->data[0],      // the raw pixel data for the Y plane
@@ -166,8 +159,8 @@ namespace {
                     );
 
                     SDL_RenderClear(sdlRenderer);
-                    SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
-                    SDL_RenderPresent(sdlRenderer);
+                    SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL); //纹理给渲染器
+                    SDL_RenderPresent(sdlRenderer); //渲染出来
 
                 } else if (event.type == SDL_QUIT) {
                     thread_exit = 1;
@@ -197,9 +190,7 @@ void playVideo(const string& inputPath) {
     }
 }
 
-int main (){
-    string inputPath = "/Users/chenzhishuai/Downloads/baidunetdiskdownload/情书.rmvb";
-    playVideo(inputPath);
-    return 0;
-}
+
+
+
 

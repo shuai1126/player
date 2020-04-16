@@ -75,7 +75,13 @@ message(OpenAL_LIBRARY=${OpenAL_LIBRARY})
 
 
 
-add_executable(player main.cpp include/ffmpegutil.h)
+add_executable(player
+        src/playAudio.cpp
+        src/playVideo.cpp
+        src/main.cpp
+        include/ffmpegutil.h
+        include/FrameGrabber.h
+        )
 
 target_include_directories( ${PROJECT_NAME}
         PRIVATE
