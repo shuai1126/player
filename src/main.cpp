@@ -14,7 +14,7 @@ int main() {
 
     string inputPath = "/Users/chenzhishuai/Downloads/baidunetdiskdownload/情书.rmvb";
     playAudio(inputPath);
-    playVideo(inputPath);
+//    playVideo(inputPath);
     return 0;
 };
 
