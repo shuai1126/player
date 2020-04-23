@@ -56,13 +56,13 @@ namespace ffmpegUtil {
       while (true) {
         int currentPacketStreamIndex = -1;
         while (!fileGotToEnd) {
-          if (av_read_frame(formatCtx, packet) >= 0) {
+          if (av_read_frame(formatCtx, packet) >= 0) { //解封装 获得AVPacket
             currentPacketStreamIndex = packet->stream_index;
             if (packet->stream_index == videoIndex && videoEnabled) {
               // cout << "- video packet pts=" << packet->pts << endl;
               // feed video packet to codec.
 
-              ret = avcodec_send_packet(vCodecCtx, packet);
+              ret = avcodec_send_packet(vCodecCtx, packet); //将AVPacket压缩数据给解码器
               if (ret == 0) {
                 av_packet_unref(packet);
                 // cout << "[VIDEO] avcodec_send_packet success." << endl;;
@@ -109,7 +109,7 @@ namespace ffmpegUtil {
         ret = -1;
 
         if (currentPacketStreamIndex == videoIndex && videoEnabled) {
-          ret = avcodec_receive_frame(vCodecCtx, pFrame);
+          ret = avcodec_receive_frame(vCodecCtx, pFrame); //获取到解码后的AVFrame数据
           // cout <<  "[VIDOE] avcodec_receive_frame !!!" << endl;;
         } else if (currentPacketStreamIndex == audioIndex && audioEnabled) {
           ret = avcodec_receive_frame(aCodecCtx, pFrame);
@@ -345,10 +345,10 @@ namespace ffmpegUtil {
       return ret;
     }
 
-    int grabFrame(AVFrame* pFrame) {
-      int ret = grabFrameByType(pFrame, AVMediaType::AVMEDIA_TYPE_UNKNOWN);
-      return ret;
-    }
+//    int grabFrame(AVFrame* pFrame) {
+//      int ret = grabFrameByType(pFrame, AVMediaType::AVMEDIA_TYPE_UNKNOWN);
+//      return ret;
+//    }
 
     /*
      * @return

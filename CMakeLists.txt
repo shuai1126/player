@@ -79,8 +79,10 @@ add_executable(player
         src/playAudio.cpp
         src/playVideo.cpp
         src/main.cpp
+        src/play.cpp
         include/ffmpegutil.h
         include/FrameGrabber.h
+        include/MediaProcessor.hpp
         )
 
 target_include_directories( ${PROJECT_NAME}

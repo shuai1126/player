@@ -34,7 +34,7 @@ namespace ffmpegUtil {
                     throw std::runtime_error("error_decodec, it should not happen.");
             }
 
-            AVCodec* codec = avcodec_find_decoder(f->streams[streamIndex]->codecpar->codec_id);
+            AVCodec* codec = avcodec_find_decoder(f->streams[streamIndex]->codecpar->codec_id); //根据指定的AVCodecID查找注册的解码器
 
             if (codec == nullptr) {
                 string errorMsg = "Could not find codec: ";
@@ -43,7 +43,7 @@ namespace ffmpegUtil {
                 throw std::runtime_error(errorMsg);
             }
 
-            (*ctx) = avcodec_alloc_context3(codec);
+            (*ctx) = avcodec_alloc_context3(codec); //为AVCodecContext分配内存
             auto codecCtx = *ctx;
 
             if (avcodec_parameters_to_context(codecCtx, f->streams[streamIndex]->codecpar) != 0) {
@@ -53,7 +53,7 @@ namespace ffmpegUtil {
                 throw std::runtime_error(errorMsg);
             }
 
-            if (avcodec_open2(codecCtx, codec, nullptr) < 0) {
+            if (avcodec_open2(codecCtx, codec, nullptr) < 0) { //打开解码器
                 string errorMsg = "Could not open codec: ";
                 errorMsg += codec->name;
                 cout << errorMsg << endl;
@@ -65,79 +65,72 @@ namespace ffmpegUtil {
         }
     };
 
-//    class PacketGrabber {
-//        const string inputUrl;
-//        AVFormatContext* formatCtx = nullptr;
-//        bool fileGotToEnd = false;
-//
-//        int videoIndex = -1;
-//        int audioIndex = -1;
-//
-//    public:
-//        ~PacketGrabber() {
-//            if (formatCtx != nullptr) {
-//                avformat_free_context(formatCtx);
-//                formatCtx = nullptr;
-//            }
-//            cout << "~PacketGrabber called." << endl;
-//        }
-//        PacketGrabber(const string& uri) : inputUrl(uri) {
-//            formatCtx = avformat_alloc_context();
-//
-//            if (avformat_open_input(&formatCtx, inputUrl.c_str(), NULL, NULL) != 0) {
-//                string errorMsg = "Can not open input file:";
-//                errorMsg += inputUrl;
-//                cout << errorMsg << endl;
-//                throw std::runtime_error(errorMsg);
-//            }
-//
-//            if (avformat_find_stream_info(formatCtx, NULL) < 0) {
-//                string errorMsg = "Can not find stream information in input file:";
-//                errorMsg += inputUrl;
-//                cout << errorMsg << endl;
-//                throw std::runtime_error(errorMsg);
-//            }
-//
-//            for (int i = 0; i < formatCtx->nb_streams; i++) {
-//                if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO && videoIndex == -1) {
-//                    videoIndex = i;
-//                    cout << "video stream index = : [" << i << "]" << endl;
-//                }
-//
-//                if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO && audioIndex == -1) {
-//                    audioIndex = i;
-//                    cout << "audio stream index = : [" << i << "]" << endl;
-//                }
-//            }
-//        }
-//
-//        /*
-//         *  return
-//         *          x > 0  : stream_index
-//         *          -1     : no more pkt
-//         */
-//        int grabPacket(AVPacket* pkt) {
-//            if (fileGotToEnd) {
-//                return -1;
-//            }
-//            while (true) {
-//                if (av_read_frame(formatCtx, pkt) >= 0) {
-//                    return pkt->stream_index;
-//                } else {
-//                    // file end;
-//                    fileGotToEnd = true;
-//                    return -1;
-//                }
-//            }
-//        }
-//
-//        AVFormatContext* getFormatCtx() const { return formatCtx; }
-//
-//        bool isFileEnd() const { return fileGotToEnd; }
-//
-//        int getAudioIndex() const { return audioIndex; }
-//        int getVideoIndex() const { return videoIndex; }
-//    };
+    class PacketGrabber {
+        const string inputUrl;
+        AVFormatContext* formatCtx = nullptr;
+        bool fileGotToEnd = false;
+
+        int videoIndex = -1;
+        int audioIndex = -1;
+
+    public:
+        ~PacketGrabber() {
+            if (formatCtx != nullptr) {
+                avformat_free_context(formatCtx);
+                formatCtx = nullptr;
+            }
+            cout << "~PacketGrabber called." << endl;
+        }
+        PacketGrabber(const string& uri) : inputUrl(uri) {
+            formatCtx = avformat_alloc_context();
+
+            if (avformat_open_input(&formatCtx, inputUrl.c_str(), NULL, NULL) != 0) {
+                string errorMsg = "Can not open input file:";
+                errorMsg += inputUrl;
+                cout << errorMsg << endl;
+                throw std::runtime_error(errorMsg);
+            }
+
+            if (avformat_find_stream_info(formatCtx, NULL) < 0) {
+                string errorMsg = "Can not find stream information in input file:";
+                errorMsg += inputUrl;
+                cout << errorMsg << endl;
+                throw std::runtime_error(errorMsg);
+            }
+
+            for (int i = 0; i < formatCtx->nb_streams; i++) {
+                if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO && videoIndex == -1) {
+                    videoIndex = i;
+                    cout << "video stream index = : [" << i << "]" << endl;
+                }
+
+                if (formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO && audioIndex == -1) {
+                    audioIndex = i;
+                    cout << "audio stream index = : [" << i << "]" << endl;
+                }
+            }
+        }
+
+        int grabPacket(AVPacket* pkt) {
+            if (fileGotToEnd) {
+                return -1;
+            }
+            while (true) {
+                if (av_read_frame(formatCtx, pkt) >= 0) {
+                    return pkt->stream_index;
+                } else {
+                    // file end;
+                    fileGotToEnd = true;
+                    return -1;
+                }
+            }
+        }
+
+        AVFormatContext* getFormatCtx() const { return formatCtx; }
+
+        bool isFileEnd() const { return fileGotToEnd; }
+
+    };
 
 
     struct AudioInfo {
@@ -229,8 +222,6 @@ namespace ffmpegUtil {
             guessOutSize *= 1.2;  // just make sure.
 
             *outData = (uint8_t*)av_malloc(sizeof(uint8_t) * guessOutSize);
-            // av_samples_alloc(&outData, NULL, outChannels, guessOutSamplesPerChannel,
-            // AV_SAMPLE_FMT_S16, 0);
             return guessOutSize;
         }
 
@@ -238,8 +229,6 @@ namespace ffmpegUtil {
                                       const AVFrame* frame) {
             int outSamples = swr_convert(swr, &dataBuffer, dataBufferSize,
                                          (const uint8_t**)&frame->data[0], frame->nb_samples);
-            // cout << "reSample: nb_samples=" << frame->nb_samples << ", sample_rate = " <<
-            // frame->sample_rate <<  ", outSamples=" << outSamples << endl;
             if (outSamples <= 0) {
                 throw std::runtime_error("error: outSamples=" + outSamples);
             }

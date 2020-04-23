@@ -66,7 +66,7 @@ namespace {
         AVSampleFormat inFormat = AVSampleFormat(grabber.getSampleFormat()); //音频样本格式
 
         AudioInfo inAudio(inLayout, inSampleRate, inChannels, inFormat); //输入音频
-        AudioInfo outAudio = ReSampler::getDefaultAudioInfo(inSampleRate); //？
+        AudioInfo outAudio = ReSampler::getDefaultAudioInfo(inSampleRate);
         outAudio.sampleRate = inAudio.sampleRate;
 
         ReSampler reSampler(inAudio, outAudio);
